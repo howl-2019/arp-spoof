@@ -114,7 +114,7 @@ int arp_packat(char* ifname, char* victim_addr, char* gateway_addr) {
 	if (res != 0) {
 		fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(pcap));
 	}
-	pcap_t* pcap = pcap_open_live("eth0", BUFSIZ, 1, 1000, errbuf);
+
 	while (true) {
 		struct pcap_pkthdr* header;
 		const u_char* packet;
