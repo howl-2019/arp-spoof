@@ -323,9 +323,9 @@ int main(int argc, char* argv[])
 
 			Mac sender_mac = eth->smac_;
 			char sender_addr[INET_ADDRSTRLEN];
-			strncpy(sender_addr, inet_ntoa(ip_header->iph_sourceip), INET_ADDRSTRLEN);
+			inet_ntop(AF_INET, &(ip_header->iph_sourceip), sender_addr, INET_ADDRSTRLEN);
 			char target_addr[INET_ADDRSTRLEN];
-			strncpy(target_addr, inet_ntoa(ip_header->iph_destip), INET_ADDRSTRLEN);
+			inet_ntop(AF_INET, &(ip_header->iph_destip), target_addr, INET_ADDRSTRLEN);
 			printf("sender: %s, target: %s", sender_addr, target_addr);
 			//Ip sender_addr = Ip(ntohl(ip_header->iph_sourceip.s_addr));
 			//Ip target_addr = Ip(ntohl(ip_header->iph_destip.s_addr));
