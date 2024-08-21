@@ -319,23 +319,26 @@ int main(int argc, char* argv[])
 		if(eth->type() == 0x0806)//arp check packet
 		{
 			printf("arp recover packet send!\n");
-			struct ipheader *ip_header = (struct ipheader *)(packet + sizeof(struct EthHdr));
+			struct ArpHdr *ip_header = (struct ArpHdr *)(packet + sizeof(struct EthHdr));
 
 			Mac sender_mac = eth->smac_;
-			printf("sender: %s\n", inet_ntoa(ip_header->iph_sourceip));
-			char sender_addr[INET_ADDRSTRLEN];
-			inet_ntop(AF_INET, &(ip_header->iph_sourceip), sender_addr, INET_ADDRSTRLEN);
+			// printf("sender: %s\n", inet_ntoa(ip_header->iph_sourceip));
+			// char sender_addr[INET_ADDRSTRLEN];
+			// inet_ntop(AF_INET, &(ip_header->iph_sourceip), sender_addr, INET_ADDRSTRLEN);
 
-			printf("sender: %s\n", inet_ntoa(ip_header->iph_destip));
-			char target_addr[INET_ADDRSTRLEN];
-			inet_ntop(AF_INET, &(ip_header->iph_destip), target_addr, INET_ADDRSTRLEN);
+			// printf("target: %s\n", inet_ntoa(ip_header->iph_destip));
+			// char target_addr[INET_ADDRSTRLEN];
+			// inet_ntop(AF_INET, &(ip_header->iph_destip), target_addr, INET_ADDRSTRLEN);
+
+
+
 			//printf("sender: %s, target: %s", sender_addr, target_addr);
 			//Ip sender_addr = Ip(ntohl(ip_header->iph_sourceip.s_addr));
 			//Ip target_addr = Ip(ntohl(ip_header->iph_destip.s_addr));
 			//printf("sender %s, target %s\n", ntohl(ip_header->iph_sourceip.s_addr), ntohl(ip_header->iph_destip.s_addr));
-			//printf("ip addr : %s\n", static_cast<std::string>(sender_addr).c_str());
-			//printf("ip addr : %s\n", static_cast<std::string>(target_addr).c_str());
-			arp_packet(ifname, Ip(sender_addr), Ip(target_addr), sender_mac);
+			printf("ip addr : %s\n", static_cast<std::string>(ip_header->sip_).c_str());
+			printf("ip addr : %s\n", static_cast<std::string>(ip_header->tip_).c_str());
+			arp_packet(ifname, ip_header->sip_, ip_header->tip_, sender_mac);
 		}
 		else if(eth->type() == 0x0800)
         {
