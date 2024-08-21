@@ -311,9 +311,8 @@ int main(int argc, char* argv[])
 			// strncpy(sender_addr, inet_ntoa(ip_header->iph_sourceip), INET_ADDRSTRLEN);
 			// char target_addr[INET_ADDRSTRLEN];
 			// strncpy(target_addr, inet_ntoa(ip_header->iph_destip), INET_ADDRSTRLEN);
-
-			Ip sender_addr = Ip(inet_ntoa(ip_header->iph_sourceip));
-			Ip target_addr = Ip(inet_ntoa(ip_header->iph_destip));
+			Ip sender_addr = Ip(ntohl(ip_header->iph_sourceip.s_addr));
+			Ip target_addr = Ip(ntohl(ip_header->iph_destip.s_addr));
 			printf("ip addr : %s\n", static_cast<std::string>(sender_addr).c_str());
 			printf("ip addr : %s\n", static_cast<std::string>(target_addr).c_str());
 			arp_packet(ifname, sender_addr, target_addr, sender_mac);
@@ -323,11 +322,9 @@ int main(int argc, char* argv[])
 			printf("this is relay\n");	
 			struct ipheader *ip_header = (struct ipheader *)(packet + sizeof(struct EthHdr));
             Mac s_mac = eth->smac_;
-			char s_addr[INET_ADDRSTRLEN];
-			strncpy(s_addr, inet_ntoa(ip_header->iph_sourceip), INET_ADDRSTRLEN);
-			char d_addr[INET_ADDRSTRLEN];
-			strncpy(d_addr, inet_ntoa(ip_header->iph_destip), INET_ADDRSTRLEN);
-			relay_packet(packet, ifname, s_addr, d_addr);
+			Ip s_addr = Ip(ntohl(ip_header->iph_sourceip.s_addr));
+			Ip d_addr = Ip(ntohl(ip_header->iph_destip.s_addr));
+			//relay_packet(packet, ifname, s_addr, d_addr);
         }
 	}
 	return 0;
