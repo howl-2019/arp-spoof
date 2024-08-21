@@ -136,7 +136,7 @@ int arp_packet(char* ifname, Ip sender_addr, Ip target_addr, Mac sender_mac) {
 	packet1.arp_.op_ = htons(ArpHdr::Request);
 	packet1.arp_.smac_ = Mac(MY_MAC); //my MAC
 	packet1.arp_.sip_ = htonl(target_addr); //gateway
-	packet1.arp_.tmac_ = sender_mac; //victi
+	packet1.arp_.tmac_ = sender_mac; //victim
 	packet1.arp_.tip_ = htonl(sender_addr); //victim IP
 
 	int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet1), sizeof(EthArpPacket));
@@ -322,11 +322,14 @@ int main(int argc, char* argv[])
 			struct ipheader *ip_header = (struct ipheader *)(packet + sizeof(struct EthHdr));
 
 			Mac sender_mac = eth->smac_;
+			printf("sender: %s\n", inet_ntoa(ip_header->iph_sourceip));
 			char sender_addr[INET_ADDRSTRLEN];
 			inet_ntop(AF_INET, &(ip_header->iph_sourceip), sender_addr, INET_ADDRSTRLEN);
+
+			printf("sender: %s\n", inet_ntoa(ip_header->iph_destip));
 			char target_addr[INET_ADDRSTRLEN];
 			inet_ntop(AF_INET, &(ip_header->iph_destip), target_addr, INET_ADDRSTRLEN);
-			printf("sender: %s, target: %s", sender_addr, target_addr);
+			//printf("sender: %s, target: %s", sender_addr, target_addr);
 			//Ip sender_addr = Ip(ntohl(ip_header->iph_sourceip.s_addr));
 			//Ip target_addr = Ip(ntohl(ip_header->iph_destip.s_addr));
 			//printf("sender %s, target %s\n", ntohl(ip_header->iph_sourceip.s_addr), ntohl(ip_header->iph_destip.s_addr));
