@@ -238,9 +238,9 @@ int arp_init(char* ifname, char* sender_addr, char* target_addr) {
 	packet1.arp_.tip_ = htonl(Ip(sender_addr)); //victim IP
 	printf("%s, %s", sender_addr, target_addr);
 	
-	res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet1), sizeof(EthArpPacket));
-	if (res != 0) {
-		fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
+	int res1 = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet1), sizeof(EthArpPacket));
+	if (res1 != 0) {
+		fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res1, pcap_geterr(handle));
 	}
 	pcap_close(handle);
 	return 0;
@@ -311,13 +311,11 @@ int main(int argc, char* argv[])
 			// strncpy(sender_addr, inet_ntoa(ip_header->iph_sourceip), INET_ADDRSTRLEN);
 			// char target_addr[INET_ADDRSTRLEN];
 			// strncpy(target_addr, inet_ntoa(ip_header->iph_destip), INET_ADDRSTRLEN);
-			if (inet_ntop(AF_INET, &(ip_header->iph_sourceip), sender_addr, INET_ADDRSTRLEN) == NULL) {
-				perror("inet_ntop");
-			}
 
-			if (inet_ntop(AF_INET, &(ip_header->iph_destip), target_addr, INET_ADDRSTRLEN) == NULL) {
-				perror("inet_ntop");
-			}
+			IP sender_addr = IP(ip_header->iph_sourceip);
+			IP target_addr = IP(ip_header->iph_destip);
+			printf("ip addr : %s\n", static_cast<std::string>(sender_addr).c_str());
+			printf("ip addr : %s\n", static_cast<std::string>(target_addr).c_str());
 			arp_packet(ifname, sender_addr, target_addr, sender_mac);
 		}
 		else if(eth->type() == 0x0800)
