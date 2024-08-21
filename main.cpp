@@ -336,7 +336,7 @@ int main(int argc, char* argv[])
 			//printf("sender %s, target %s\n", ntohl(ip_header->iph_sourceip.s_addr), ntohl(ip_header->iph_destip.s_addr));
 			printf("ip addr : %s\n", static_cast<std::string>(Ip(ntohl(ip_header->sip_))).c_str());
 			printf("ip addr : %s\n", static_cast<std::string>(Ip(ntohl(ip_header->tip_))).c_str());
-			arp_packet(ifname, ip_header->sip_, ip_header->tip_, sender_mac);//이거 엔디안 수정
+			arp_packet(ifname, Ip(ntohl(ip_header->sip_)), Ip(ntohl(ip_header->tip_)), sender_mac);//이거 엔디안 수정
 		}
 		else if(eth->type() == 0x0800)
         {
