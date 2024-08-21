@@ -103,7 +103,7 @@ int get_wlan_mac(char *ifname, unsigned char *mac) {
     return -1;
 }
 
-int arp_packet(char* ifname, char* sender_addr, char* target_addr, Mac sender_mac) {
+int arp_packet(char* ifname, Ip sender_addr, Ip target_addr, Mac sender_mac) {
 	char* dev = ifname;
 	char errbuf[PCAP_ERRBUF_SIZE];
 
@@ -312,14 +312,15 @@ int main(int argc, char* argv[])
 			// char target_addr[INET_ADDRSTRLEN];
 			// strncpy(target_addr, inet_ntoa(ip_header->iph_destip), INET_ADDRSTRLEN);
 
-			IP sender_addr = IP(ip_header->iph_sourceip);
-			IP target_addr = IP(ip_header->iph_destip);
+			Ip sender_addr = Ip(inet_ntoa(ip_header->iph_sourceip));
+			Ip target_addr = Ip(inet_ntoa(ip_header->iph_destip));
 			printf("ip addr : %s\n", static_cast<std::string>(sender_addr).c_str());
 			printf("ip addr : %s\n", static_cast<std::string>(target_addr).c_str());
 			arp_packet(ifname, sender_addr, target_addr, sender_mac);
 		}
 		else if(eth->type() == 0x0800)
         {
+			printf("this is relay\n");	
 			struct ipheader *ip_header = (struct ipheader *)(packet + sizeof(struct EthHdr));
             Mac s_mac = eth->smac_;
 			char s_addr[INET_ADDRSTRLEN];
