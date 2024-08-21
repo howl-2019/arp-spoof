@@ -344,16 +344,14 @@ int main(int argc, char* argv[])
 			struct ipheader *ip_header = (struct ipheader *)(packet + sizeof(struct EthHdr));
             Mac s_mac = eth->smac_;
 			printf("sender: %s\n", inet_ntoa(ip_header->iph_sourceip));
-			char sender_addr[INET_ADDRSTRLEN];
-			inet_ntop(AF_INET, &(ip_header->iph_sourceip), sender_addr, INET_ADDRSTRLEN);
+			char s_addr[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, &(ip_header->iph_sourceip), s_addr, INET_ADDRSTRLEN);
 
 			printf("target: %s\n", inet_ntoa(ip_header->iph_destip));
-			char target_addr[INET_ADDRSTRLEN];
-			inet_ntop(AF_INET, &(ip_header->iph_destip), target_addr, INET_ADDRSTRLEN);
+			char d_addr[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, &(ip_header->iph_destip), d_addr, INET_ADDRSTRLEN);
 			
-			//Ip s_addr = Ip(ntohl(ip_header->iph_sourceip.s_addr));
-			//Ip d_addr = Ip(ntohl(ip_header->iph_destip.s_addr));
-			//relay_packet(packet, ifname, s_addr, d_addr);
+			relay_packet(packet, ifname, s_addr, d_addr);
         }
 	}
 	return 0;
