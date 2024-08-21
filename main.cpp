@@ -11,7 +11,7 @@
 #include <map>
 
 std::map<char*, char*> IP_GATE;
-std::map<char*, Mac> TABLE2;
+std::map<Ip, Mac> TABLE2;
 
 #pragma pack(push, 1)
 struct EthArpPacket final {
@@ -159,13 +159,13 @@ int relay_packet(const u_char *packet, char* ifname, char* s_addr, char* d_addr)
 	eth->smac_ = Mac(MY_MAC); //my MAC FIX
 
 	// packet config
-	auto it = TABLE2.find(d_addr);
+	auto it = TABLE2.find(Ip(d_addr));
 	if (it != TABLE2.end())
 	{
 		Mac destmac = it->second;
 		char gate_ip[INET_ADDRSTRLEN];
 		strcpy(gate_ip, IP_GATE.find(s_addr)->second);
-		Mac gate_mac = TABLE2.find(gate_ip)->second;
+		Mac gate_mac = TABLE2.find(Ip(gate_ip))->second;
 		eth->dmac_ = Mac(gate_mac);
 	}
 	else// inbound
@@ -226,7 +226,7 @@ int arp_init(char* ifname, char* sender_addr, char* target_addr) {
 		if(eth->type() == 0x0806)
 		{
 			sender_mac = eth->smac();
-			TABLE2.insert({sender_addr, sender_mac});// sender_addr 문자열을 포인터로 받아서 충돌이 나려니?
+			TABLE2.insert({Ip(sender_addr), sender_mac});// sender_addr 문자열을 포인터로 받아서 충돌이 나려니?
 			break;
 		}
 	}//ok
@@ -330,23 +330,29 @@ int main(int argc, char* argv[])
 			// char target_addr[INET_ADDRSTRLEN];
 			// inet_ntop(AF_INET, &(ip_header->iph_destip), target_addr, INET_ADDRSTRLEN);
 
-
-
 			//printf("sender: %s, target: %s", sender_addr, target_addr);
 			//Ip sender_addr = Ip(ntohl(ip_header->iph_sourceip.s_addr));
 			//Ip target_addr = Ip(ntohl(ip_header->iph_destip.s_addr));
 			//printf("sender %s, target %s\n", ntohl(ip_header->iph_sourceip.s_addr), ntohl(ip_header->iph_destip.s_addr));
-			printf("ip addr : %s\n", static_cast<std::string>(ntohl(ip_header->sip_)).c_str());
-			printf("ip addr : %s\n", static_cast<std::string>(ntohl(ip_header->tip_)).c_str());
-			arp_packet(ifname, ip_header->sip_, ip_header->tip_, sender_mac);
+			printf("ip addr : %s\n", static_cast<std::string>(Ip(ntohl(ip_header->sip_))).c_str());
+			printf("ip addr : %s\n", static_cast<std::string>(Ip(ntohl(ip_header->tip_))).c_str());
+			arp_packet(ifname, ip_header->sip_, ip_header->tip_, sender_mac);//이거 엔디안 수정
 		}
 		else if(eth->type() == 0x0800)
         {
 			printf("this is relay\n");	
 			struct ipheader *ip_header = (struct ipheader *)(packet + sizeof(struct EthHdr));
             Mac s_mac = eth->smac_;
-			Ip s_addr = Ip(ntohl(ip_header->iph_sourceip.s_addr));
-			Ip d_addr = Ip(ntohl(ip_header->iph_destip.s_addr));
+			printf("sender: %s\n", inet_ntoa(ip_header->iph_sourceip));
+			char sender_addr[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, &(ip_header->iph_sourceip), sender_addr, INET_ADDRSTRLEN);
+
+			printf("target: %s\n", inet_ntoa(ip_header->iph_destip));
+			char target_addr[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, &(ip_header->iph_destip), target_addr, INET_ADDRSTRLEN);
+			
+			//Ip s_addr = Ip(ntohl(ip_header->iph_sourceip.s_addr));
+			//Ip d_addr = Ip(ntohl(ip_header->iph_destip.s_addr));
 			//relay_packet(packet, ifname, s_addr, d_addr);
         }
 	}
