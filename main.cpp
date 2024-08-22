@@ -147,17 +147,21 @@ int arp_packet(char* ifname, Ip sender_addr, Ip target_addr, Mac sender_mac) {
 	return 0;
 }
 
-int relay_packet(u_char *packet, char* ifname, char* s_addr, char* d_addr)
+int relay_packet(const u_char *packet, char* ifname, char* s_addr, char* d_addr)
 {
 	pcap_t* handle = pcap_open_live(ifname, 0, 0, 0, errbuf);
 	if (handle == nullptr) {
 		fprintf(stderr, "couldn't open device %s(%s)\n", ifname, errbuf);
 		return -1;
 	}
-	struct EthHdr *eth = (struct EthHdr *)packet;
-	struct ipheader *ip_header = (struct ipheader *)(packet + sizeof(struct EthHdr));
+	size_t packet_len = sizeof(struct EthHdr) + sizeof(struct ipheader);
+    u_char* packet1 = (u_char*)malloc(packet_len);
+
+	struct EthHdr *eth = (struct EthHdr *)packet1;
+	struct ipheader *ip_header = (struct ipheader *)(packet1 + sizeof(struct EthHdr));
 	eth->smac_ = Mac(MY_MAC); //my MAC FIX
-	print("find start\n");
+	
+	printf("find start\n");
 	// packet config
 	auto it = TABLE2.find(Ip(d_addr));
 	if (it != TABLE2.end())
@@ -165,6 +169,7 @@ int relay_packet(u_char *packet, char* ifname, char* s_addr, char* d_addr)
 		Mac destmac = it->second;
 		char gate_ip[INET_ADDRSTRLEN];
 		strcpy(gate_ip, IP_GATE.find(s_addr)->second);
+		printf("Gateway: %s\n", gate_ip);
 		Mac gate_mac = TABLE2.find(Ip(gate_ip))->second;
 		printf("outbound find finish\n");
 		eth->dmac_ = Mac(gate_mac);
@@ -176,7 +181,7 @@ int relay_packet(u_char *packet, char* ifname, char* s_addr, char* d_addr)
 		eth->dmac_ = destmac;
 	}
 
-    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(packet));
+    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet1), sizeof(packet1));
 	if (res != 0) {
 		fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
 	}
