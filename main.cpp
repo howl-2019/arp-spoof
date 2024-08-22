@@ -164,9 +164,9 @@ int relay_packet(const u_char *packet, char* ifname, char* s_addr, char* d_addr)
 	printf("find start\n");
 	// packet config
 	auto it = TABLE2.find(Ip(d_addr));
-	if (it != TABLE2.end())
+	if (it == TABLE2.end())
 	{
-		Mac destmac = it->second;
+		printf("outbound\n");
 		char gate_ip[INET_ADDRSTRLEN];
 		printf("s_addr: %s", s_addr);
 		strncpy(gate_ip, IP_GATE.find(s_addr)->second, INET_ADDRSTRLEN);// 이게 end를 반환하는 듯
