@@ -156,7 +156,8 @@ int relay_packet(const u_char *packet, char* ifname, char* s_addr, char* d_addr)
 	}
 	size_t packet_len = sizeof(struct EthHdr) + sizeof(struct ipheader);
     u_char* packet1 = (u_char*)malloc(packet_len);
-
+	memcpy(packet1, packet, packet_len);
+	
 	struct EthHdr *eth = (struct EthHdr *)packet1;
 	struct ipheader *ip_header = (struct ipheader *)(packet1 + sizeof(struct EthHdr));
 	eth->smac_ = Mac(MY_MAC); //my MAC FIX
@@ -351,11 +352,11 @@ int main(int argc, char* argv[])
 			printf("this is relay\n");	
 			struct ipheader *ip_header = (struct ipheader *)(packet + sizeof(struct EthHdr));
             Mac s_mac = eth->smac_;
-			printf("sender: %s\n", inet_ntoa(ip_header->iph_sourceip));
+			printf("s addr: %s\n", inet_ntoa(ip_header->iph_sourceip));
 			char s_addr[INET_ADDRSTRLEN];
 			inet_ntop(AF_INET, &(ip_header->iph_sourceip), s_addr, INET_ADDRSTRLEN);
 
-			printf("target: %s\n", inet_ntoa(ip_header->iph_destip));
+			printf("d addr: %s\n", inet_ntoa(ip_header->iph_destip));
 			char d_addr[INET_ADDRSTRLEN];
 			inet_ntop(AF_INET, &(ip_header->iph_destip), d_addr, INET_ADDRSTRLEN);
 			
