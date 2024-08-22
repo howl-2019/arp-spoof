@@ -168,7 +168,8 @@ int relay_packet(const u_char *packet, char* ifname, char* s_addr, char* d_addr)
 	{
 		Mac destmac = it->second;
 		char gate_ip[INET_ADDRSTRLEN];
-		strcpy(gate_ip, IP_GATE.find(s_addr)->second);
+		printf("s_addr: %s", s_addr);
+		strncpy(gate_ip, IP_GATE.find(s_addr)->second, INET_ADDRSTRLEN);// 이게 end를 반환하는 듯
 		printf("Gateway: %s\n", gate_ip);
 		Mac gate_mac = TABLE2.find(Ip(gate_ip))->second;
 		printf("outbound find finish\n");
